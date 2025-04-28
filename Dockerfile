@@ -1,17 +1,20 @@
 # syntax=docker/dockerfile:1.4
 
+# Etap 1 - downloader
 FROM alpine AS downloader
 WORKDIR /src
 RUN apk add --no-cache git
 RUN --mount=type=secret,id=git_token \
     git clone https://$(cat /run/secrets/git_token)@github.com/bachuz13/zadanie1.git .
 
+# Etap 2 - builder
 FROM python:3.12-alpine AS builder
 LABEL org.opencontainers.image.authors="Sebastian Żurawski"
 WORKDIR /app
 COPY --from=downloader /src/ /app/
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
+# Etap 3 - finalny obraz
 FROM python:3.12-alpine
 
 WORKDIR /app
